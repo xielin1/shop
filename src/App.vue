@@ -1,12 +1,12 @@
 <template>
   <div id="app">
-    <main-tab-bar></main-tab-bar>
+    <main-tab-bar class="main-tab-bar"></main-tab-bar>
     <router-view></router-view>
   </div>
 </template>
 
 <script>
-import MainTabBar from 'components/content/MainTabBar/MainTabBar'
+import MainTabBar from 'components/content/mainTabBar/MainTabBar'
 import { request } from 'network/request';
 
 export default {
@@ -20,4 +20,8 @@ export default {
 
 <style>
 @import url('./assets/css/base.css');
+
+.main-tab-bar {
+  z-index: 9;
+}
 </style>
