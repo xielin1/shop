@@ -3,11 +3,14 @@
         <nav-bar class="home_nav">
             <div slot="center">购物街</div>
         </nav-bar>
-        <home-swiper :banners="banners"></home-swiper>
-        <recommend-view :recommends="recommends"></recommend-view>
-        <feature-view></feature-view>
-        <tab-control :titles="['流行', '新款', '精选']" class="tab_control" @tabClick="tabClick"></tab-control>
-        <good-list :goods="goods[goodsType].list"></good-list>
+        <scroll class="wrapper">
+            <home-swiper :banners="banners"></home-swiper>
+            <recommend-view :recommends="recommends"></recommend-view>
+            <feature-view></feature-view>
+            <tab-control :titles="['流行', '新款', '精选']" class="tab_control" @tabClick="tabClick"></tab-control>
+            <good-list :goods="goods[goodsType].list"></good-list>
+        </scroll>
+
     </div>
 
 </template>
@@ -15,6 +18,8 @@
 
 import NavBar from 'components/common/navbar/NavBar.vue'
 import TabBar from '../../components/common/tabbar/TabBar.vue';
+import Scroll from '@/components/common/scroll/Scroll.vue';
+
 import TabControl from '../../components/content/tabControl/TabControl.vue';
 import GoodList from 'components/content/goods/GoodList.vue';
 
@@ -34,7 +39,9 @@ export default {
         FeatureView,
         TabBar,
         TabControl,
+        Scroll,
         GoodList,
+
 
     },
     data() {
@@ -86,9 +93,11 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 #home {
     padding-top: 44px;
+    height: 100vh;
+    position: relative;
 }
 
 .home_nav {
@@ -104,5 +113,15 @@ export default {
     position: sticky;
     top: 44px;
     z-index: 9
+}
+
+.wrapper {
+    overflow: hidden;
+    position: absolute;
+    top: 44px;
+    left: 0;
+    right: 0;
+    bottom: 49px;
+
 }
 </style>
