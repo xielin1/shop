@@ -25,6 +25,10 @@ const router =new Router({
             path:'/profile',
             component:()=>import('pages/Profile/Profile')
         },
+        {
+            path:'/detail',
+            component:()=>import('pages/Detail/Detail')
+        },
     ],
     mode:'history'
 })

@@ -1,6 +1,6 @@
 <template>
-    <div class="goods-item">
-        <img :src="goodsItem.image" alt="">
+    <div class="goods-item" @click="itemClick">
+        <img :src="goodsItem.image" alt="" @load="imgLoad">
         <div class="goods-info">
             <p>{{ goodsItem.title }}</p>
             <span class="price">{{ goodsItem.price }}</span>
@@ -10,6 +10,7 @@
 </template>
 
 <script>
+
 export default {
     name: 'GoodListItem',
     props: {
@@ -18,15 +19,23 @@ export default {
         }
     },
     methods: {
-        click() {
-            console.log(this.goodsItem);
+        imgLoad() {
+            this.$root.$bus.emit('imgLoad')
+        },
+        itemClick() {
+            console.log(this.goodsItem.id);
+            this.$router.push({
+                path: '/Detail',
+                query: {
+                    id: this.goodsItem.id
+                }
+            })
         }
     }
-
 }
 </script>
 
-<style>
+<style scoped>
 .goods-item {
     padding-bottom: 40px;
     position: relative;

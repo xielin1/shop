@@ -13,6 +13,10 @@ export default {
         probeType: {
             type: Number,
             default: 3
+        },
+        pullUpLoad: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
@@ -21,16 +25,19 @@ export default {
         }
     },
     methods: {
-        backTop(x, y, time) {
-            this.scroll.scrollTo(x, y, time)
+        thidsbackTop(x, y, time) {
+            this.scroll && this.scroll.scrollTo(x, y, time)
         },
-        scrollPos() {
-
+        refresh() {
+            this.scroll && this.scroll.refresh();
+        },
+        finishPullUp() {
+            this.scroll && this.scroll.finishPullUp();
         }
     },
     mounted() {
         const bscroll = new BScroll(this.$refs.wrapper, {
-            pullUpLoad: true,//是否能上拉加载 事件pullingUp
+            pullUpLoad: this.pullUpLoad,//是否能上拉加载 事件pullingUp
             observeDOM: true,
             click: true,
             scrollbar: true,
@@ -40,6 +47,11 @@ export default {
         this.scroll.on('scroll', (position) => {
             this.$emit('contentScroll', position)
         })
+        this.scroll.on('pullingUp', () => {
+            this.$emit("pullingUp");
+
+        })
+
     }
 }
 </script>

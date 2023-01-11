@@ -3,11 +3,16 @@
         <nav-bar class="home_nav">
             <div slot="center">购物街</div>
         </nav-bar>
-        <scroll class="wrapper" ref="scroll" :probeType="3" @contentScroll="contentScroll">
-            <home-swiper :banners="banners"></home-swiper>
+        <tab-control :titles="['流行', '新款', '精选']" @tabClick="tabClick" class="tab-control" ref="tabControl1"
+            v-show="isFixed">
+        </tab-control>
+        <scroll class="wrapper" ref="scroll" :probeType="3" :pullUpLoad="true" @contentScroll="contentScroll"
+            @pullingUp="loadMore">
+            <home-swiper :banners="banners" @swiperLoad="swiperLoad"></home-swiper>
             <recommend-view :recommends="recommends"></recommend-view>
             <feature-view></feature-view>
-            <tab-control :titles="['流行', '新款', '精选']" class="tab_control" @tabClick="tabClick"></tab-control>
+            <tab-control :titles="['流行', '新款', '精选']" @tabClick="tabClick" ref="tabControl2">
+            </tab-control>
             <good-list :goods="goods[goodsType].list"></good-list>
         </scroll>
         <back-top @click.native="backTop" v-show="isShowBackTop"></back-top>
@@ -15,6 +20,7 @@
 
 </template>
 <script>
+
 
 import NavBar from 'components/common/navbar/NavBar.vue'
 import TabBar from '../../components/common/tabbar/TabBar.vue';
@@ -28,8 +34,9 @@ import HomeSwiper from './childComps/HomeSwiper';
 import RecommendView from './childComps/RecommendView.vue';
 import FeatureView from './childComps/FeatureView.vue';
 
-import { getHomeMultidata, getHomeGoods } from '@/network/home';
 
+import { getHomeMultidata, getHomeGoods } from '@/network/home';
+import { debounce } from 'common/util.js'
 
 
 
@@ -56,14 +63,24 @@ export default {
                 'sell': { page: 0, list: [] },
             },
             goodsType: 'pop',
-            isShowBackTop: false
+            isShowBackTop: false,
+            offsetTop: 0,
+            isFixed: false,
+            leftY: 0
         }
     },
-    created() {
+    mounted() {
         this.getHomeMultidata();
         this.getHomeGoods('pop',);
         this.getHomeGoods('new');
         this.getHomeGoods('sell');
+        const refresh = debounce(this.$refs.scroll.refresh, 200)
+        this.$root.$bus.on('imgLoad', () => {
+            refresh();
+        })
+    },
+    onUnmounted() {
+        this.$root.$bus.off('imgLoad')
     },
     methods: {
         /**
@@ -76,53 +93,59 @@ export default {
             })
         },
         getHomeGoods(type) {
-            const page = this.goods[type].page + 1;
+            const page = this.goods[type].page + 1;//动态的获取page
             getHomeGoods(type, page).then((res) => {
-                this.goods[type].list = res.data.data.list
+                this.goods[type].list.push(...res.data.data.list)//解构语法，把数据拼接到原数组 
+                this.goods[type].page++; //成功后页面++
             })
+            // 完成上拉加载更多,scroll默认只加载一次
+            this.$refs.scroll.finishPullUp()
         },
 
         /**
          * 事件监听相关方法
          */
-        tabClick(index) {
+        tabClick(index) {//监听tabControl的点击，传数据
             switch (index) {
                 case 0: this.goodsType = 'pop'; break;
                 case 1: this.goodsType = 'new'; break;
                 case 2: this.goodsType = 'sell'; break;
             }
+            this.$refs.tabControl1.currentIndex = index;
+            this.$refs.tabControl2.currentIndex = index;
         },
         backTop() {
             this.$refs.scroll.backTop(0, 0, 500);
         },
         contentScroll(position) {
             this.isShowBackTop = (-position.y) > 1000
-
+            this.isFixed = (-position.y) > this.offsetTop
+        },
+        loadMore() {//再次调用请求函数
+            this.getHomeGoods(this.goodsType)
+        },
+        swiperLoad() {
+            this.offsetTop = this.$refs.tabControl2.$el.offsetTop
         }
-    }
+    },
+
 }
 </script>
 
 <style scoped>
 #home {
-    padding-top: 44px;
     height: 100vh;
     position: relative;
 }
 
 .home_nav {
-    position: fixed;
-    left: 0;
-    right: 0;
-    top: 0;
     z-index: 8;
     background-color: #ff699c;
 }
 
-.tab_control {
-    position: sticky;
-    top: 44px;
-    z-index: 9
+.tab-control {
+    position: relative;
+    z-index: 9;
 }
 
 .wrapper {
